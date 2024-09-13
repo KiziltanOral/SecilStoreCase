@@ -1,0 +1,6 @@
+@SecilStoreCase.API_HostAddress = http://localhost:5192
+
+GET {{SecilStoreCase.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

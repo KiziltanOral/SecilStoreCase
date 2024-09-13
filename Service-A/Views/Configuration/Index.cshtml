@@ -1,0 +1,208 @@
+﻿@model IEnumerable<ConfigurationVM>
+
+<h2>Service-A Configuration List</h2>
+<p><strong>Site Name:</strong> @ViewBag.SiteName</p>
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Value</th>
+            <th>IsActive</th>
+            <th>Application Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var config in Model)
+        {
+            <tr>
+                <td>@config.Id</td>
+                <td>@config.Name</td>
+                <td>@config.Type</td>
+                <td>@config.Value</td>
+                <td>@config.IsActive</td>
+                <td>@config.ApplicationName</td>
+                <td>
+                    <button class="btn btn-warning" onclick="loadUpdateModal(@config.Id)">Güncelle</button>
+                    <button class="btn btn-danger" onclick="deleteConfiguration(@config.Id)">Sil</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<button class="btn btn-primary" onclick="openCreateModal()">Yeni Ekle</button>
+
+<!-- Ekleme Modal -->
+<div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni Konfigürasyon Ekle</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="createForm">
+                    <div class="form-group">
+                        <label for="Name">Name</label>
+                        <input type="text" id="createName" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="Type">Type</label>
+                        <input type="text" id="createType" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="Value">Value</label>
+                        <input type="text" id="createValue" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="IsActive">Is Active</label>
+                        <input type="checkbox" id="createIsActive" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-primary" onclick="createConfiguration()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Güncelleme Modal -->
+<div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Konfigürasyonu Güncelle</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="updateForm">
+                    <input type="hidden" id="updateId" />
+                    <div class="form-group">
+                        <label for="Name">Name</label>
+                        <input type="text" id="updateName" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="Type">Type</label>
+                        <input type="text" id="updateType" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="Value">Value</label>
+                        <input type="text" id="updateValue" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="IsActive">Is Active</label>
+                        <input type="checkbox" id="updateIsActive" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-primary" onclick="updateConfiguration()">Güncelle</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openCreateModal() {
+        $('#createModal').modal('show');
+    }
+
+    function createConfiguration() {
+        var data = {
+            Name: $('#createName').val(),
+            Type: $('#createType').val(),
+            Value: $('#createValue').val(),
+            IsActive: $('#createIsActive').is(':checked')
+        };
+
+        $.ajax({
+            url: '/Configuration/Create',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function (result) {
+                $('#createModal').modal('hide');
+                location.reload();
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+
+    function loadUpdateModal(id) {
+        $.get('/Configuration/Update/' + id, function (data) {
+            if (data) { 
+                $('#updateId').val(data.id);
+                $('#updateName').val(data.name);
+                $('#updateType').val(data.type);
+                $('#updateValue').val(data.value);
+                $('#updateIsActive').prop('checked', data.isActive);
+
+                $('#updateModal').modal('show'); 
+            } else {
+                console.log("No data returned.");
+            }
+        }).fail(function (xhr) {
+            console.log("Error: " + xhr.responseText); 
+        });
+    }
+
+
+    function updateConfiguration() {
+        var data = {
+            Id: $('#updateId').val(),
+            Name: $('#updateName').val(),
+            Type: $('#updateType').val(),
+            Value: $('#updateValue').val(),
+            IsActive: $('#updateIsActive').is(':checked')
+        };
+
+        $.ajax({
+            url: '/Configuration/Update',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function (result) {
+                $('#updateModal').modal('hide');
+                location.reload();
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+    }
+
+    function deleteConfiguration(id) {
+        if (confirm('Bu kaydı silmek istediğinize emin misiniz?')) {
+            $.ajax({
+                url: '/Configuration/Delete/' + id,
+                type: 'POST',
+                success: function (result) {
+                    location.reload();
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
+        }
+    } 
+
+</script>
