@@ -9,7 +9,12 @@
     </div>
 }
 
-<table class="table">
+<div class="form-group">
+    <label for="filterByName">Filter by Name:</label>
+    <input type="text" id="filterByName" class="form-control" onkeyup="filterTableByName()" placeholder="Type to filter...">
+</div>
+
+<table class="table" id="configTable">
     <thead>
         <tr>
             <th>Id</th>
@@ -204,5 +209,28 @@
             });
         }
     }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        function filterTableByName() {
+            var input = document.getElementById("filterByName");
+            var filter = input.value.toLowerCase();
+            var table = document.getElementById("configTable");
+            var tr = table.getElementsByTagName("tr");
+
+            for (var i = 1; i < tr.length; i++) {
+                var td = tr[i].getElementsByTagName("td")[1];
+                if (td) {
+                    var txtValue = td.textContent || td.innerText;
+                    if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        document.getElementById("filterByName").onkeyup = filterTableByName;
+    });
 
 </script>
